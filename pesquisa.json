@@ -1,0 +1,15 @@
+{
+  "titulo": "Pesquisa de Avaliação de Serviço",
+  "perguntas": [
+    {
+      "id": 1,
+      "texto": "Como você avalia a qualidade do atendimento?",
+      "opcoes": [
+        { "texto": "Muito ruim", "pontos": 1 },
+        { "texto": "Ruim", "pontos": 2 },
+        { "texto": "Bom", "pontos": 3 },
+        { "texto": "Muito bom", "pontos": 4 }
+      ]
+    }
+  ]
+}

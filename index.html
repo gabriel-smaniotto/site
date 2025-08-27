@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Pesquisa de Avaliação</title>
+</head>
+<body>
+  <h1>Pesquisa</h1>
+  <form id="formulario"></form>
+  <button type="button" onclick="enviar()">Enviar</button>
+
+  <script>
+    async function carregar() {
+      let res = await fetch("pesquisa.json");
+      let dados = await res.json();
+      let form = document.getElementById("formulario");
+
+      dados.perguntas.forEach(p => {
+        let bloco = document.createElement("div");
+        bloco.innerHTML = `<p>${p.texto}</p>`;
+        p.opcoes.forEach(o => {
+          bloco.innerHTML += `
+            <label>
+              <input type="radio" name="p${p.id}" value="${o.pontos}">
+              ${o.texto}
+            </label><br>
+          `;
+        });
+        form.appendChild(bloco);
+      });
+    }
+
+    function enviar() {
+      let respostas = {};
+      document.querySelectorAll("input[type=radio]:checked")
+        .forEach(r => respostas[r.name] = r.value);
+
+      alert("Respostas enviadas: " + JSON.stringify(respostas));
+      // aqui depois conectamos com Google Sheets
+    }
+
+    carregar();
+  </script>
+</body>
+</html>
