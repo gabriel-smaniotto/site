@@ -9,37 +9,72 @@
   <form id="formulario"></form>
   <button type="button" onclick="enviar()">Enviar</button>
 
-  <script>
-    async function carregar() {
-      let res = await fetch("pesquisa.json");
-      let dados = await res.json();
-      let form = document.getElementById("formulario");
+<script src="https://unpkg.com/@supabase/supabase-js"></script>
+<script>
+  const SUPABASE_URL = "https://kbwnunqstdedncxkkwor.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtid251bnFzdGRlZG5jeGtrd29yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzMzE1OTEsImV4cCI6MjA3MTkwNzU5MX0.yyr4qwzC9aYT60CpqGbpplxh7COB8m-O6xsSGwvWSEE";
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+</script>
 
-      dados.perguntas.forEach(p => {
-        let bloco = document.createElement("div");
-        bloco.innerHTML = `<p>${p.texto}</p>`;
-        p.opcoes.forEach(o => {
-          bloco.innerHTML += `
-            <label>
-              <input type="radio" name="p${p.id}" value="${o.pontos}">
-              ${o.texto}
-            </label><br>
-          `;
-        });
-        form.appendChild(bloco);
+<script>
+  async function carregar() {
+    let res = await fetch("pesquisa.json");
+    let dados = await res.json();
+    let form = document.getElementById("formulario");
+
+    dados.perguntas.forEach(p => {
+      let bloco = document.createElement("div");
+      bloco.innerHTML = `<p>${p.texto}</p>`;
+      p.opcoes.forEach(o => {
+        bloco.innerHTML += `
+          <label>
+            <input type="radio" name="p${p.id}" value="${o.pontos}">
+            ${o.texto}
+          </label><br>
+        `;
       });
+      form.appendChild(bloco);
+    });
+  }
+
+  async function enviar() {
+    // 1. cria registro principal
+    let { data: resposta, error: err1 } = await supabase
+      .from("respostas")
+      .insert([{}])  // só insere a linha com timestamp
+      .select();
+
+    if (err1) {
+      alert("Erro ao salvar resposta principal");
+      return;
     }
 
-    function enviar() {
-      let respostas = {};
-      document.querySelectorAll("input[type=radio]:checked")
-        .forEach(r => respostas[r.name] = r.value);
+    let respostaId = resposta[0].id;
 
-      alert("Respostas enviadas: " + JSON.stringify(respostas));
-      // aqui depois conectamos com Google Sheets
+    // 2. prepara os detalhes
+    let detalhes = [];
+    document.querySelectorAll("input[type=radio]:checked")
+      .forEach(r => {
+        detalhes.push({
+          resposta_id: respostaId,
+          pergunta_id: r.name,   // ex: "p1", "p2"
+          valor: r.value
+        });
+      });
+
+    // 3. salva os detalhes
+    let { error: err2 } = await supabase
+      .from("respostas_detalhe")
+      .insert(detalhes);
+
+    if (err2) {
+      alert("Erro ao salvar detalhes");
+    } else {
+      alert("Resposta registrada com sucesso!");
     }
+  }
 
-    carregar();
-  </script>
+  carregar();
+</script>
 </body>
 </html>
